@@ -1,0 +1,90 @@
+This is a proposed coding standard for makefiles you can adopt.
+
+Notation:
+- Variable names are written in the underscore notation (lower-case with
+  words separated by an underscore).
+- Lower-case variable names are used for variables used internally and 
+  upper-case for variables that can be overridden from the command line
+  (compilers, flags, system tools).
+- Variables are always referenced in the form `$(var)' (not `${var}') with the
+  exception of single-letter variable names in which case `$c' is used. 
+- Traditional names for variables are used - CPP, CC, CXX, AR, AS, LD, 
+  CPPFLAGS, CFLAGS, CXXFLAGS, ARFLAGS, ASFLAGS, LDFLAGS, etc.
+- Function names are written in lower case with words separated by a hyphen.
+- Variables are assigned in the form "variable operator value" (with a space
+  between the variable name and the operator and between the operator and the
+  value).
+- Comment lines and the help message output are wrapped at 80 characters.
+- Comments are composed of sentences - starting with a capital letter and
+  ending with a full stop.
+- If code is broken up into multiple lines, the 80 character mark is preferred
+  but not necessary.
+- Conditional directives are written in the form:
+conditional-directive (value1,value2)
+    text-if-true
+else
+    text-if-false
+endif
+- Subsequent conditional directives testing the same condition should be
+  written as a single `if-else directive' if they are mutually exclusive 
+  (instead of two separate `if' directives).
+- The indentation string is four spaces, tabs are only used in recipes.
+- Whitespace is avoided in conditional directives and function calls.
+
+
+Programming practices:
+- http://aegis.sourceforge.net/auug97.pdf
+- A single point of entry to the build system is maintaned.
+- Every file target name corresponds to an absolute path of the file it 
+  creates.
+- Every file target creates only one file - $@. The only exception to that 
+  rule are the .d files created during object creation as a sideeffect.
+- Phony targets have only dependencies and no recipies. The only exception
+  to that rule are cleaning targets.
+- Dependencies are expressed via the native make mechanism instead of calling
+  make from a recipe whenever possible.
+- Only canonical absolute paths starting with $(project_root) are used.
+- Any behaviour that's desirable in most use cases is the default behaviour
+  with the possibility to override.
+- Any information that can be reliably inferred is not requested from the
+  user.
+- Wherever conventions exist, those are chosen before new, not commonly known
+  approaches.
+- Any input from the user is validated, errors/warnings are reported and
+  valid values supplied are stripped.
+- Simple (or eager) variables are used unless recursive (or lazy) variables
+  are necessary (e.g. function definitions).
+- Native make functions are preferred to system-dependent tools. If such tools
+  are used, the simplest ones are chosen (e.g. cut/tr before sed/awk, etc.).
+- In large projects, wildcards are preferred from hardcoded lists when source 
+  files are considered. 
+- Cleaning the build products is always done with exact lists and not 
+  unrestricted wildcards.
+- The build system does not rely on any specific VCS, servers or environment 
+  variables - only files and target names.
+- The build system is arranged in a modular way, so that parts of its
+  functionality are kept in separate files as plugins independent from 
+  each other.
+- All dependencies on makefiles are referenced via the $(MAKEFILE_LIST) 
+  variable and not their names explicitly.
+- Recipies are written as a single shell invocation (lines are finished with 
+  `;\'). Exceptions are allowed for additional information printing.
+- The make invocations are kept stateless (no files are written outside of 
+  target recipies) to facilitate simultaneous builds in one working copy.
+- All the aggregating targets that comprise the developer's interface produce
+  unique files (by path, or by name), so that all such targets can be built in
+  one working copy with no interference.
+- The amount of output produced by the makefiles is kept minimal. Unless
+  it's an error, or a warning, it probably shouldn't be printed, unless a
+  higher verbosity mode is explicitly chosen.
+- The default `help' target exhaustively describes the user interface at all
+  times (updated in the same commit as the code).
+- Any files handled by the developers are kept as simple as possible - only
+  variable assignments and possibly target dependencies, no actual build
+  logic.
+- One explicitly defined SHELL per system is used.
+- .SECONDEXPANSION is avoided, especially when compatibility with multiple
+  makers needs to be retained.
+- The `shell' and `eval' functions are avoided whenever possible.
+- The `filter' and `patsubst' functions are preferred to `findstring' wherever
+  applicable.
